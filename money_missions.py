@@ -702,7 +702,7 @@ if st.session_state.mode == "Kids":
 
         st.markdown('<div class="kid-card">', unsafe_allow_html=True)
         st.subheader(f"level {lvl}: {level_info['name']}")
-        concept = level_info.get("Concept","")
+        concept = level_info.get("concept","")
         if concept:
             st.caption(concept)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -832,8 +832,8 @@ if st.session_state.mode == "Kids":
             if finish:
                 if lvl == 4:
                     total = int(st.session_state.wallet)
-                    planned_spend = int(st.session_state["Jar_spend"])
-                    planned_save = int(st.session_state["Jar_save"])
+                    planned_spend = int(st.session_state["jar_spend"])
+                    planned_save = int(st.session_state["jar_save"])
                     if planned_save + planned_spend > total:
                         st.error("Your jars do not fit your wallet. try again.")
                         st.stop()
