@@ -1186,7 +1186,7 @@ if st.session_state.mode == "Parents":
             for lv in range(1, 7):
                 status = "unlocked" if level_unlock_rule(lv, int(st.session_state.stars)) else "locked"
                 st.write(f"level {lv}: {LEVELS[lv]['name']} (grade {LEVELS[lv]['grade_band']}) - {status}")
-                st.caption(LEVELS[lv]["Concept"])
+                st.caption(LEVELS[lv]["concept"])
             st.markdown("</div>", unsafe_allow_html=True)
 
         if st.session_state.view == "Parent: Coach":
