@@ -721,8 +721,8 @@ if st.session_state.mode == "Kids":
         )
         st.markdown("</div>", unsafe_allow_html=True)
 
-       if st.session_state.play_step == "Mission":
-    if lvl >= 5:
+    if st.session_state.play_step == "Mission":
+        if lvl >= 5:
         st.markdown('<div class="kid-card">', unsafe_allow_html=True)
         st.subheader("Repeat Costs (Subscriptions) 🔁")
         st.caption("These cost coins every mission until you turn them off.")
