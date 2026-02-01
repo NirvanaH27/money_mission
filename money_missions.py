@@ -702,7 +702,9 @@ if st.session_state.mode == "Kids":
 
         st.markdown('<div class="kid-card">', unsafe_allow_html=True)
         st.subheader(f"level {lvl}: {level_info['name']}")
-        st.caption(level_info["Concept"])
+        concept = level_info.get("Concept","")
+        if concept:
+            st.caption(concept)
         st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown('<div class="kid-card">', unsafe_allow_html=True)
