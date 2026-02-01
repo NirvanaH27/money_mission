@@ -723,26 +723,26 @@ if st.session_state.mode == "Kids":
 
     if st.session_state.play_step == "Mission":
         if lvl >= 5:
+            st.markdown('<div class="kid-card">', unsafe_allow_html=True)
+            st.subheader("Repeat Costs (Subscriptions) 🔁")
+            st.caption("These cost coins every mission until you turn them off.")
+            current = set(st.session_state.active_subscriptions)
+
+            for sub_name, sub_cost in SUBSCRIPTIONS.items():
+                on = sub_name in current
+                new_on = st.checkbox(
+                    f"{sub_name} ({sub_cost} coins)",
+                    value=on,
+                    key=f"sub_{sub_name}_m{st.session_state.mission}",  # key changes each mission
+                )
+                if new_on:
+                    st.session_state.active_subscriptions.add(sub_name)
+                else:
+                    st.session_state.active_subscriptions.discard(sub_name)
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
         st.markdown('<div class="kid-card">', unsafe_allow_html=True)
-        st.subheader("Repeat Costs (Subscriptions) 🔁")
-        st.caption("These cost coins every mission until you turn them off.")
-        current = set(st.session_state.active_subscriptions)
-
-        for sub_name, sub_cost in SUBSCRIPTIONS.items():
-            on = sub_name in current
-            new_on = st.checkbox(
-                f"{sub_name} ({sub_cost} coins)",
-                value=on,
-                key=f"sub_{sub_name}_m{st.session_state.mission}",  # key changes each mission
-            )
-            if new_on:
-                st.session_state.active_subscriptions.add(sub_name)
-            else:
-                st.session_state.active_subscriptions.discard(sub_name)
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown('<div class="kid-card">', unsafe_allow_html=True)
 
     # wrap all mission choices + finish button in a form so it must be re-submitted each mission
     with st.form(key=f"mission_form_{st.session_state.mission}", clear_on_submit=True):
