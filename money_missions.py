@@ -721,23 +721,123 @@ if st.session_state.mode == "Kids":
         )
         st.markdown("</div>", unsafe_allow_html=True)
 
-        if st.session_state.play_step == "Mission":
-            if lvl >= 5:
-                st.markdown('<div class="kid-card">', unsafe_allow_html=True)
-                st.subheader("Repeat Costs (Subscriptions) 🔁")
-                st.caption("These cost coins every mission until you turn them off.")
-                current = set(st.session_state.active_subscriptions)
-                for sub_name, sub_cost in SUBSCRIPTIONS.items():
-                    on = sub_name in current
-                    new_on = st.checkbox(f"{sub_name} ({sub_cost} coins)", value=on, key=f"sub_{sub_name}")
-                    if new_on:
-                        st.session_state.active_subscriptions.add(sub_name)
-                    else:
-                        if sub_name in st.session_state.active_subscriptions:
-                            st.session_state.active_subscriptions.remove(sub_name)
-                st.markdown("</div>", unsafe_allow_html=True)
+       if st.session_state.play_step == "Mission":
+    if lvl >= 5:
+        st.markdown('<div class="kid-card">', unsafe_allow_html=True)
+        st.subheader("Repeat Costs (Subscriptions) 🔁")
+        st.caption("These cost coins every mission until you turn them off.")
+        current = set(st.session_state.active_subscriptions)
 
-            st.markdown('<div class="kid-card">', unsafe_allow_html=True)
+        for sub_name, sub_cost in SUBSCRIPTIONS.items():
+            on = sub_name in current
+            new_on = st.checkbox(
+                f"{sub_name} ({sub_cost} coins)",
+                value=on,
+                key=f"sub_{sub_name}_m{st.session_state.mission}",  # key changes each mission
+            )
+            if new_on:
+                st.session_state.active_subscriptions.add(sub_name)
+            else:
+                st.session_state.active_subscriptions.discard(sub_name)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown('<div class="kid-card">', unsafe_allow_html=True)
+
+    # wrap all mission choices + finish button in a form so it must be re-submitted each mission
+    with st.form(key=f"mission_form_{st.session_state.mission}", clear_on_submit=True):
+
+        spend_amt = 0
+        save_amt = 0
+        do_growth_test = False
+
+        spend_options = SPEND_OPTIONS_BY_LEVEL.get(lvl, SPEND_OPTIONS_BY_LEVEL[2])
+
+        st.caption("Tiny plan: try to save first, then choose a buy that fits your wallet.")
+
+        if lvl <= 2:
+            st.subheader("Step 1: save first")
+            save_amt = st.slider(
+                "Move coins into your piggy bank",
+                min_value=0,
+                max_value=int(st.session_state.wallet),
+                value=0,
+            )
+
+            remaining_wallet = int(st.session_state.wallet) - int(save_amt)
+
+            st.subheader("Step 2: choose a buy (optional)")
+            spend_choice = st.selectbox("Pick one", list(spend_options.keys()))
+            spend_amt = int(spend_options[spend_choice])
+
+            if spend_amt > remaining_wallet:
+                st.warning("That buy is too expensive after saving. pick a smaller buy or save less.")
+
+        elif lvl == 3:
+            st.subheader("Step 1: save first")
+            save_amt = st.slider(
+                "Save coins before spending",
+                min_value=0,
+                max_value=int(st.session_state.wallet),
+                value=0,
+            )
+
+            remaining_wallet = int(st.session_state.wallet) - int(save_amt)
+
+            st.subheader("Step 2: need or want?")
+            st.caption("Needs help life run. Wants are fun.")
+            labeled = [spend_label_with_icons(k) for k in spend_options.keys()]
+            mapping = dict(zip(labeled, list(spend_options.keys())))
+            spend_pick_label = st.selectbox("Pick one", labeled)
+            spend_choice = mapping[spend_pick_label]
+            spend_amt = int(spend_options[spend_choice])
+
+            if spend_amt > remaining_wallet:
+                st.warning("That buy is too expensive after saving. pick a smaller buy or save less.")
+
+        elif lvl == 4:
+            st.subheader("Step 1: make a budget (jars)")
+            st.caption("Plan your coins: save, spend, and share.")
+
+            total = int(st.session_state.wallet)
+            save_amt = st.slider("Save jar", 0, total, 0)
+            remaining = total - int(save_amt)
+            spend_amt_plan = st.slider("Spend jar", 0, remaining, 0)
+
+            st.subheader("Step 2: choose a buy (Must fit your spend jar)")
+            spend_choice = st.selectbox("Pick one", list(spend_options.keys()))
+            spend_amt = int(spend_options[spend_choice])
+
+            if spend_amt > int(spend_amt_plan):
+                st.warning("That buy is bigger than your spend jar. Choose a smaller buy, or increase your spend jar.")
+
+        else:
+            st.subheader("Step 1: save first")
+            save_amt = st.slider(
+                "Save coins before spending",
+                min_value=0,
+                max_value=int(st.session_state.wallet),
+                value=0,
+            )
+
+            remaining_wallet = int(st.session_state.wallet) - int(save_amt)
+
+            st.subheader("Step 2: Choose a buy (optional)")
+            spend_choice = st.selectbox("Pick one", list(spend_options.keys()))
+            spend_amt = int(spend_options[spend_choice])
+
+            if spend_amt > remaining_wallet:
+                st.warning("That buy is too expensive after saving. pick a smaller buy or save less.")
+
+            if lvl >= 6:
+                st.subheader("Step 3: Growth test (risk)")
+                do_growth_test = st.checkbox("use 5 coins for a growth test (can give back 4-7 coins)")
+                st.caption("This teaches risk: it can go up or down. do not risk coins you need soon.")
+
+        # IMPORTANT: use form_submit_button (not st.button)
+        finish = st.form_submit_button("Finish this mission")
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
             spend_amt = 0
             save_amt = 0
