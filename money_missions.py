@@ -839,9 +839,9 @@ if st.session_state.mode == "Kids":
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-        spend_amt = 0
-        save_amt = 0
-        do_growth_test = False
+    spend_amt = 0
+    save_amt = 0
+    do_growth_test = False
 
             spend_options = SPEND_OPTIONS_BY_LEVEL.get(lvl, SPEND_OPTIONS_BY_LEVEL[2])
 
