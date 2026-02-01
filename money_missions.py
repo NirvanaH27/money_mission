@@ -431,7 +431,7 @@ def mission_summary_lines(saved, spent, allowance, lvl):
 # Session State
 # ============================================================
 def init_state():
-    st.session_state.mode = "Kids"
+    st.session_state.mode = "Parents"
     st.session_state.view = "Welcome"
 
     st.session_state.child_grade = 1
