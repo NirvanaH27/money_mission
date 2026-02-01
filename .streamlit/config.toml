@@ -1,0 +1,7 @@
+[theme]
+base="light"
+primaryColor="#22c55e"            # mint green buttons
+backgroundColor="#f0fdf4"         # very light green
+secondaryBackgroundColor="#ffffff"
+textColor="#1f2937"
+font="rounded"
