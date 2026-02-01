@@ -702,7 +702,7 @@ if st.session_state.mode == "Kids":
 
         st.markdown('<div class="kid-card">', unsafe_allow_html=True)
         st.subheader(f"level {lvl}: {level_info['name']}")
-        concept = level_info.get("concept","")
+        concept = level_info.get("concept", "")
         if concept:
             st.caption(concept)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -733,7 +733,7 @@ if st.session_state.mode == "Kids":
                 new_on = st.checkbox(
                     f"{sub_name} ({sub_cost} coins)",
                     value=on,
-                    key=f"sub_{sub_name}_m{st.session_state.mission}",  # key changes each mission
+                    key=f"sub_{sub_name}_m{st.session_state.mission}",
                 )
                 if new_on:
                     st.session_state.active_subscriptions.add(sub_name)
@@ -744,108 +744,15 @@ if st.session_state.mode == "Kids":
 
         st.markdown('<div class="kid-card">', unsafe_allow_html=True)
 
-    # wrap all mission choices + finish button in a form so it must be re-submitted each mission
-    with st.form(key=f"mission_form_{st.session_state.mission}", clear_on_submit=True):
+        # wrap all mission choices + finish button in a form so it must be re-submitted each mission
+        with st.form(key=f"mission_form_{st.session_state.mission}", clear_on_submit=True):
+            spend_amt = 0
+            save_amt = 0
+            do_growth_test = False
 
-        spend_amt = 0
-        save_amt = 0
-        do_growth_test = False
+            spend_options = SPEND_OPTIONS_BY_LEVEL.get(lvl, SPEND_OPTIONS_BY_LEVEL[2])
 
-        spend_options = SPEND_OPTIONS_BY_LEVEL.get(lvl, SPEND_OPTIONS_BY_LEVEL[2])
-
-        st.caption("Tiny plan: try to save first, then choose a buy that fits your wallet.")
-
-        if lvl <= 2:
-            st.subheader("Step 1: save first")
-            save_amt = st.slider(
-                "Move coins into your piggy bank",
-                min_value=0,
-                max_value=int(st.session_state.wallet),
-                value=0,
-            )
-
-            remaining_wallet = int(st.session_state.wallet) - int(save_amt)
-
-            st.subheader("Step 2: choose a buy (optional)")
-            spend_choice = st.selectbox("Pick one", list(spend_options.keys()))
-            spend_amt = int(spend_options[spend_choice])
-
-            if spend_amt > remaining_wallet:
-                st.warning("That buy is too expensive after saving. pick a smaller buy or save less.")
-
-        elif lvl == 3:
-            st.subheader("Step 1: save first")
-            save_amt = st.slider(
-                "Save coins before spending",
-                min_value=0,
-                max_value=int(st.session_state.wallet),
-                value=0,
-            )
-
-            remaining_wallet = int(st.session_state.wallet) - int(save_amt)
-
-            st.subheader("Step 2: need or want?")
-            st.caption("Needs help life run. Wants are fun.")
-            labeled = [spend_label_with_icons(k) for k in spend_options.keys()]
-            mapping = dict(zip(labeled, list(spend_options.keys())))
-            spend_pick_label = st.selectbox("Pick one", labeled)
-            spend_choice = mapping[spend_pick_label]
-            spend_amt = int(spend_options[spend_choice])
-
-            if spend_amt > remaining_wallet:
-                st.warning("That buy is too expensive after saving. pick a smaller buy or save less.")
-
-        elif lvl == 4:
-            st.subheader("Step 1: make a budget (jars)")
-            st.caption("Plan your coins: save, spend, and share.")
-
-            total = int(st.session_state.wallet)
-            save_amt = st.slider("Save jar", 0, total, 0)
-            remaining = total - int(save_amt)
-            spend_amt_plan = st.slider("Spend jar", 0, remaining, 0)
-
-            st.subheader("Step 2: choose a buy (Must fit your spend jar)")
-            spend_choice = st.selectbox("Pick one", list(spend_options.keys()))
-            spend_amt = int(spend_options[spend_choice])
-
-            if spend_amt > int(spend_amt_plan):
-                st.warning("That buy is bigger than your spend jar. Choose a smaller buy, or increase your spend jar.")
-
-        else:
-            st.subheader("Step 1: save first")
-            save_amt = st.slider(
-                "Save coins before spending",
-                min_value=0,
-                max_value=int(st.session_state.wallet),
-                value=0,
-            )
-
-            remaining_wallet = int(st.session_state.wallet) - int(save_amt)
-
-            st.subheader("Step 2: Choose a buy (optional)")
-            spend_choice = st.selectbox("Pick one", list(spend_options.keys()))
-            spend_amt = int(spend_options[spend_choice])
-
-            if spend_amt > remaining_wallet:
-                st.warning("That buy is too expensive after saving. pick a smaller buy or save less.")
-
-            if lvl >= 6:
-                st.subheader("Step 3: Growth test (risk)")
-                do_growth_test = st.checkbox("use 5 coins for a growth test (can give back 4-7 coins)")
-                st.caption("This teaches risk: it can go up or down. do not risk coins you need soon.")
-
-        # IMPORTANT: use form_submit_button (not st.button)
-        finish = st.form_submit_button("Finish this mission")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-        spend_amt = 0
-        save_amt = 0
-        do_growth_test = False
-    
-        spend_options = SPEND_OPTIONS_BY_LEVEL.get(lvl, SPEND_OPTIONS_BY_LEVEL[2])
-    
-        st.caption("Tiny plan: try to save first, then choose a buy that fits your wallet.")
+            st.caption("Tiny plan: try to save first, then choose a buy that fits your wallet.")
 
             if lvl <= 2:
                 st.subheader("Step 1: save first")
@@ -853,13 +760,13 @@ if st.session_state.mode == "Kids":
                     "Move coins into your piggy bank",
                     min_value=0,
                     max_value=int(st.session_state.wallet),
-                    value=min(4 if lvl == 2 else 2, int(st.session_state.wallet)),
-                    key="save_slider_basic",
+                    value=0,
                 )
 
                 remaining_wallet = int(st.session_state.wallet) - int(save_amt)
+
                 st.subheader("Step 2: choose a buy (optional)")
-                spend_choice = st.selectbox("Pick one", list(spend_options.keys()), key="spend_choice_basic")
+                spend_choice = st.selectbox("Pick one", list(spend_options.keys()))
                 spend_amt = int(spend_options[spend_choice])
 
                 if spend_amt > remaining_wallet:
@@ -871,16 +778,16 @@ if st.session_state.mode == "Kids":
                     "Save coins before spending",
                     min_value=0,
                     max_value=int(st.session_state.wallet),
-                    value=min(5, int(st.session_state.wallet)),
-                    key="save_slider_nv",
+                    value=0,
                 )
 
                 remaining_wallet = int(st.session_state.wallet) - int(save_amt)
+
                 st.subheader("Step 2: need or want?")
-                st.caption("Seeds help life run. Wants are fun.")
+                st.caption("Needs help life run. Wants are fun.")
                 labeled = [spend_label_with_icons(k) for k in spend_options.keys()]
                 mapping = dict(zip(labeled, list(spend_options.keys())))
-                spend_pick_label = st.selectbox("Pick one", labeled, key="spend_choice_nv")
+                spend_pick_label = st.selectbox("Pick one", labeled)
                 spend_choice = mapping[spend_pick_label]
                 spend_amt = int(spend_options[spend_choice])
 
@@ -892,12 +799,12 @@ if st.session_state.mode == "Kids":
                 st.caption("Plan your coins: save, spend, and share.")
 
                 total = int(st.session_state.wallet)
-                save_amt = st.slider("Save jar", 0, total, min(6, total), key="jar_save")
+                save_amt = st.slider("Save jar", 0, total, 0)
                 remaining = total - int(save_amt)
-                spend_amt_plan = st.slider("Spend jar", 0, remaining, min(5, remaining), key="jar_spend")
+                spend_amt_plan = st.slider("Spend jar", 0, remaining, 0)
 
                 st.subheader("Step 2: choose a buy (Must fit your spend jar)")
-                spend_choice = st.selectbox("Pick one", list(spend_options.keys()), key="spend_choice_budget")
+                spend_choice = st.selectbox("Pick one", list(spend_options.keys()))
                 spend_amt = int(spend_options[spend_choice])
 
                 if spend_amt > int(spend_amt_plan):
@@ -909,13 +816,13 @@ if st.session_state.mode == "Kids":
                     "Save coins before spending",
                     min_value=0,
                     max_value=int(st.session_state.wallet),
-                    value=min(6, int(st.session_state.wallet)),
-                    key="save_slider_subs",
+                    value=0,
                 )
 
                 remaining_wallet = int(st.session_state.wallet) - int(save_amt)
+
                 st.subheader("Step 2: Choose a buy (optional)")
-                spend_choice = st.selectbox("Pick one", list(spend_options.keys()), key="spend_choice_subs")
+                spend_choice = st.selectbox("Pick one", list(spend_options.keys()))
                 spend_amt = int(spend_options[spend_choice])
 
                 if spend_amt > remaining_wallet:
@@ -923,250 +830,231 @@ if st.session_state.mode == "Kids":
 
                 if lvl >= 6:
                     st.subheader("Step 3: Growth test (risk)")
-                    do_growth_test = st.checkbox("use 5 coins for a growth test (can give back 4-7 coins)", key="growth_test_chk")
+                    do_growth_test = st.checkbox("use 5 coins for a growth test (can give back 4-7 coins)")
                     st.caption("This teaches risk: it can go up or down. do not risk coins you need soon.")
 
-            finish = st.button("Finish this mission", key="finish_mission_btn")
-            st.markdown("</div>", unsafe_allow_html=True)
+            finish = st.form_submit_button("Finish this mission")
 
-            if finish:
-                if lvl == 4:
-                    total = int(st.session_state.wallet)
-                    planned_spend = int(st.session_state["jar_spend"])
-                    planned_save = int(st.session_state["jar_save"])
-                    if planned_save + planned_spend > total:
-                        st.error("Your jars do not fit your wallet. try again.")
-                        st.stop()
-                    if spend_amt > planned_spend:
-                        st.error("That buy is bigger than your spend jar. choose a smaller buy.")
-                        st.stop()
-                    save_amt = planned_save
+        st.markdown("</div>", unsafe_allow_html=True)
 
-                if int(save_amt) + int(spend_amt) > int(st.session_state.wallet):
-                    st.error("You do not have enough coins in your wallet for that choice.")
-                else:
-                    st.session_state.wallet -= (int(save_amt) + int(spend_amt))
-                    st.session_state.bank += int(save_amt)
+        # mission logic
+        if finish:
+            remaining_wallet = int(st.session_state.wallet) - int(save_amt)
+            if int(spend_amt) > int(remaining_wallet):
+                st.error("That buy does not fit after saving. choose a smaller buy or save less.")
+            else:
+                # apply save + spend
+                st.session_state.bank += int(save_amt)
+                st.session_state.wallet -= int(save_amt)
 
-                    st.session_state.save_hist.append(int(save_amt))
-                    st.session_state.spend_hist.append(int(spend_amt))
+                st.session_state.wallet -= int(spend_amt)
 
-                    stars_earned = 0
-
-                    if int(save_amt) >= 2:
-                        stars_earned += 2
-                    if int(save_amt) >= 5:
-                        stars_earned += 1
-
-                    allowance = int(st.session_state.allowance)
-                    if allowance > 0:
-                        s_ratio = int(save_amt) / allowance
-                        p_ratio = int(spend_amt) / allowance
-                        if s_ratio >= 0.40 and p_ratio <= 0.40 and int(save_amt) > 0:
-                            stars_earned += 2
-                        if p_ratio <= 0.15 and s_ratio >= 0.50 and int(save_amt) > 0:
-                            stars_earned += 1
-
-                    if int(spend_amt) == 0 and int(save_amt) >= 4:
-                        stars_earned += 1
-
-                    if lvl >= 4 and int(save_amt) >= 6:
-                        stars_earned += 1
-
-                    growth_result = None
-                    if lvl >= 6 and do_growth_test:
-                        if int(st.session_state.wallet) >= 5:
-                            st.session_state.wallet -= 5
-                            growth_result = random.choice([4, 5, 6, 7])
-                            st.session_state.wallet += growth_result
-                        else:
-                            st.warning("Not enough wallet coins for the growth test after your choices.")
-
-                    surprise_text = None
-                    if lvl >= 3 and random.random() < 0.22:
-                        ev_name, ev_delta = random.choice(SURPRISE_EVENTS)
-                        if int(st.session_state.wallet) + ev_delta >= 0:
-                            st.session_state.wallet += ev_delta
-                        else:
-                            needed = abs(int(st.session_state.wallet) + ev_delta)
-                            st.session_state.wallet = 0
-                            st.session_state.bank = max(0, int(st.session_state.bank) - needed)
-                        surprise_text = f"surprise: {ev_name} ({ev_delta} coins)"
-
-                    met_goal = level_info["mission_goal_fn"](int(save_amt), int(spend_amt), int(st.session_state.allowance))
-                    if met_goal:
-                        stars_earned += 3
-                        st.session_state.streak += 1
-                        goal_text = "Mission goal reached"
+                # growth test (level 6)
+                growth_result = None
+                if lvl >= 6 and do_growth_test:
+                    if int(st.session_state.wallet) >= 5:
+                        st.session_state.wallet -= 5
+                        growth_result = random.randint(4, 7)
+                        st.session_state.wallet += growth_result
+                        st.session_state.history.append(
+                            {"mission": int(st.session_state.mission), "event": "growth_test", "amount": growth_result - 5}
+                        )
                     else:
-                        st.session_state.streak = 0
-                        goal_text = "Mission goal not reached"
+                        st.warning("Not enough coins in wallet for the growth test.")
 
-                    if stars_earned > 0:
-                        st.session_state.stars += stars_earned
-
-                    summary = {
-                        "saved": int(save_amt),
-                        "spent": int(spend_amt),
-                        "stars_earned": int(stars_earned),
-                        "goal_text": goal_text,
-                        "growth_result": growth_result,
-                        "surprise_text": surprise_text,
-                        "lines": mission_summary_lines(int(save_amt), int(spend_amt), int(st.session_state.allowance), lvl),
-                        "bank": int(st.session_state.bank),
-                        "wallet": int(st.session_state.wallet),
-                    }
-                    st.session_state.last_mission_summary = summary
-
+                # surprise event
+                surprise_text = ""
+                if random.random() < 0.25:
+                    text, amt = random.choice(SURPRISE_EVENTS)
+                    surprise_text = text
+                    if int(st.session_state.wallet) + amt >= 0:
+                        st.session_state.wallet += amt
+                    else:
+                        remainder = abs(int(st.session_state.wallet) + amt)
+                        st.session_state.wallet = 0
+                        st.session_state.bank = max(0, int(st.session_state.bank) - remainder)
                     st.session_state.history.append(
-                        {
-                            "mission": int(st.session_state.mission),
-                            "event": "mission_end",
-                            "saved": int(save_amt),
-                            "spent": int(spend_amt),
-                            "bank": int(st.session_state.bank),
-                            "wallet": int(st.session_state.wallet),
-                            "stars": int(st.session_state.stars),
-                            "streak": int(st.session_state.streak),
-                            "level": int(st.session_state.level),
-                            "allowance": int(st.session_state.allowance),
-                        }
+                        {"mission": int(st.session_state.mission), "event": "surprise_event", "amount": int(amt), "text": text}
                     )
 
-                    st.session_state.mission += 1
-                    st.session_state.mission_paid = False
-                    st.session_state.mission_paid_amount = 0
-                    st.session_state.subscriptions_charged_this_mission = False
+                allowance = int(st.session_state.allowance)
+                saved = int(save_amt)
+                spent = int(spend_amt)
+                ok = LEVELS[lvl]["mission_goal_fn"](saved, spent, allowance)
 
-                    st.session_state.play_step = "Today’s learning"
-                    st.balloons()
-                    st.rerun()
+                stars_earned = 0
+                if ok:
+                    stars_earned = 3
+                    st.session_state.stars += stars_earned
+                    st.session_state.streak += 1
+                else:
+                    st.session_state.streak = 0
 
-            if st.session_state.last_mission_summary:
-                s = st.session_state.last_mission_summary
-                st.markdown('<div class="kid-card">', unsafe_allow_html=True)
-                st.subheader("Mission Summary 🧾")
-                c1, c2, c3, c4 = st.columns(4)
-                with c1:
-                    st.write(f"saved: {s['saved']}")
-                with c2:
-                    st.write(f"spent: {s['spent']}")
-                with c3:
-                    st.write(f"stars earned: {s['stars_earned']}")
-                with c4:
-                    st.write(s["goal_text"])
+                st.session_state.save_hist.append(saved)
+                st.session_state.spend_hist.append(spent)
 
-                st.progress(compute_progress(int(st.session_state.bank), int(st.session_state.goal_amount)))
-                st.caption(f"goal: {st.session_state.goal_name} ({int(st.session_state.goal_amount)} coins)")
+                goal_text = "goal progress updated"
+                lines = mission_summary_lines(saved, spent, allowance, lvl)
 
-                for line in s["lines"]:
-                    st.write("- " + line)
+                st.session_state.last_mission_summary = {
+                    "saved": saved,
+                    "spent": spent,
+                    "stars_earned": stars_earned,
+                    "goal_text": goal_text,
+                    "lines": lines,
+                    "growth_result": growth_result,
+                    "surprise_text": surprise_text,
+                }
 
-                if s["growth_result"] is not None:
-                    st.write(f"- growth test result: you got back {s['growth_result']} coins.")
+                st.session_state.history.append(
+                    {
+                        "mission": int(st.session_state.mission),
+                        "event": "mission_end",
+                        "saved": saved,
+                        "spent": spent,
+                        "bank": int(st.session_state.bank),
+                        "wallet": int(st.session_state.wallet),
+                        "stars": int(st.session_state.stars),
+                        "streak": int(st.session_state.streak),
+                        "level": int(st.session_state.level),
+                        "allowance": int(st.session_state.allowance),
+                    }
+                )
 
-                if s["surprise_text"]:
-                    st.write("- " + s["surprise_text"])
+                st.session_state.mission += 1
+                st.session_state.mission_paid = False
+                st.session_state.mission_paid_amount = 0
+                st.session_state.subscriptions_charged_this_mission = False
 
-                st.markdown("</div>", unsafe_allow_html=True)
+                st.session_state.play_step = "Today’s learning"
+                st.balloons()
+                st.rerun()
 
-            if int(st.session_state.bank) >= int(st.session_state.goal_amount):
-                st.markdown('<div class="kid-card">', unsafe_allow_html=True)
-                st.subheader("Buy My Goal 🎯")
-                st.write(f"goal: {st.session_state.goal_name} ({int(st.session_state.goal_amount)} coins)")
-                if st.button("Buy my goal now", key="buy_goal_btn"):
-                    st.session_state.bank -= int(st.session_state.goal_amount)
-                    st.session_state.stars += 8
-                    st.session_state.last_mission_summary = None
-                    st.success("You bought your goal. new goal unlocked.")
-
-                    options = GOALS_BY_LEVEL.get(int(st.session_state.level), GOALS_BY_LEVEL[1])
-                    candidates = [g for g in options if g[0] != st.session_state.goal_name]
-                    if candidates:
-                        st.session_state.goal_name, st.session_state.goal_amount = random.choice(candidates)
-                    else:
-                        st.session_state.goal_name, st.session_state.goal_amount = options[0]
-                    st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
-
-        if st.session_state.play_step == "Today’s learning":
+        if st.session_state.last_mission_summary:
+            s = st.session_state.last_mission_summary
             st.markdown('<div class="kid-card">', unsafe_allow_html=True)
-            st.subheader("Today’s Learning 🧠")
-            st.caption("You get 2 tries. stars only count the first time you get it correct.")
+            st.subheader("Mission Summary 🧾")
+            c1, c2, c3, c4 = st.columns(4)
+            with c1:
+                st.write(f"saved: {s['saved']}")
+            with c2:
+                st.write(f"spent: {s['spent']}")
+            with c3:
+                st.write(f"stars earned: {s['stars_earned']}")
+            with c4:
+                st.write(s["goal_text"])
 
-            st.write("Quiz (1 question) 📝")
-            quiz = st.session_state.quiz_current
-            st.write(quiz["q"])
-            quiz_choice = st.radio("choose one", quiz["choices"], key="quiz_choice_kids")
+            st.progress(compute_progress(int(st.session_state.bank), int(st.session_state.goal_amount)))
+            st.caption(f"goal: {st.session_state.goal_name} ({int(st.session_state.goal_amount)} coins)")
 
-            quiz_done = st.session_state.quiz_done_today
-            if quiz_done:
-                st.caption("Quiz is done for today. come back tomorrow for a new one.")
-            else:
-                if st.button("check quiz answer", key="check_quiz_btn"):
-                    st.session_state.quiz_tries += 1
-                    if quiz_choice == quiz["answer"]:
-                        if not st.session_state.quiz_star_awarded:
-                            st.session_state.stars += 2
-                            st.session_state.quiz_star_awarded = True
-                        st.session_state.quiz_feedback = {"type": "success", "text": "correct", "tip": ""}
-                        st.session_state.quiz_done_today = True
-                    else:
-                        st.session_state.quiz_feedback = {"type": "warning", "text": "not quite", "tip": quiz["tip"]}
-                        if st.session_state.quiz_tries >= 2:
-                            st.session_state.quiz_done_today = True
-                    st.rerun()
+            for line in s["lines"]:
+                st.write("- " + line)
 
-            if st.session_state.quiz_feedback:
-                fb = st.session_state.quiz_feedback
-                if fb["type"] == "success":
-                    st.success(f"{fb['text']} (+2 stars if first correct)")
-                else:
-                    st.warning(fb["text"])
-                    if fb.get("tip"):
-                        st.info(fb["tip"])
-                    remaining = max(0, 2 - int(st.session_state.quiz_tries))
-                    if not st.session_state.quiz_done_today:
-                        st.caption(f"tries left: {remaining}")
+            if s["growth_result"] is not None:
+                st.write(f"- growth test result: you got back {s['growth_result']} coins.")
 
-            st.markdown("---")
-
-            st.write("Puzzle (1 question) 🧩")
-            puzzle = st.session_state.puzzle_current
-            st.write(puzzle["q"])
-            puzzle_choice = st.radio("choose one", puzzle["choices"], key="puzzle_choice_kids")
-
-            puzzle_done = st.session_state.puzzle_done_today
-            if puzzle_done:
-                st.caption("Puzzle is done for today. come back tomorrow for a new one.")
-            else:
-                if st.button("Check puzzle answer", key="check_puzzle_btn"):
-                    st.session_state.puzzle_tries += 1
-                    if puzzle_choice == puzzle["answer"]:
-                        if not st.session_state.puzzle_star_awarded:
-                            st.session_state.stars += 2
-                            st.session_state.puzzle_star_awarded = True
-                        st.session_state.puzzle_feedback = {"type": "success", "text": "nice", "tip": ""}
-                        st.session_state.puzzle_done_today = True
-                    else:
-                        st.session_state.puzzle_feedback = {"type": "warning", "text": "almost", "tip": puzzle["tip"]}
-                        if st.session_state.puzzle_tries >= 2:
-                            st.session_state.puzzle_done_today = True
-                    st.rerun()
-
-            if st.session_state.puzzle_feedback:
-                fb = st.session_state.puzzle_feedback
-                if fb["type"] == "success":
-                    st.success(f"{fb['text']} (+2 stars if first correct)")
-                else:
-                    st.warning(fb["text"])
-                    if fb.get("tip"):
-                        st.info(fb["tip"])
-                    remaining = max(0, 2 - int(st.session_state.puzzle_tries))
-                    if not st.session_state.puzzle_done_today:
-                        st.caption(f"tries left: {remaining}")
+            if s["surprise_text"]:
+                st.write("- " + s["surprise_text"])
 
             st.markdown("</div>", unsafe_allow_html=True)
+
+        if int(st.session_state.bank) >= int(st.session_state.goal_amount):
+            st.markdown('<div class="kid-card">', unsafe_allow_html=True)
+            st.subheader("Buy My Goal 🎯")
+            st.write(f"goal: {st.session_state.goal_name} ({int(st.session_state.goal_amount)} coins)")
+            if st.button("Buy my goal now", key="buy_goal_btn"):
+                st.session_state.bank -= int(st.session_state.goal_amount)
+                st.session_state.stars += 8
+                st.session_state.last_mission_summary = None
+                st.success("You bought your goal. new goal unlocked.")
+
+                options = GOALS_BY_LEVEL.get(int(st.session_state.level), GOALS_BY_LEVEL[1])
+                candidates = [g for g in options if g[0] != st.session_state.goal_name]
+                if candidates:
+                    st.session_state.goal_name, st.session_state.goal_amount = random.choice(candidates)
+                else:
+                    st.session_state.goal_name, st.session_state.goal_amount = options[0]
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    if st.session_state.play_step == "Today’s learning":
+        st.markdown('<div class="kid-card">', unsafe_allow_html=True)
+        st.subheader("Today’s Learning 🧠")
+        st.caption("You get 2 tries. stars only count the first time you get it correct.")
+
+        st.write("Quiz (1 question) 📝")
+        quiz = st.session_state.quiz_current
+        st.write(quiz["q"])
+        quiz_choice = st.radio("choose one", quiz["choices"], key="quiz_choice_kids")
+
+        quiz_done = st.session_state.quiz_done_today
+        if quiz_done:
+            st.caption("Quiz is done for today. come back tomorrow for a new one.")
+        else:
+            if st.button("check quiz answer", key="check_quiz_btn"):
+                st.session_state.quiz_tries += 1
+                if quiz_choice == quiz["answer"]:
+                    if not st.session_state.quiz_star_awarded:
+                        st.session_state.stars += 2
+                        st.session_state.quiz_star_awarded = True
+                    st.session_state.quiz_feedback = {"type": "success", "text": "correct", "tip": ""}
+                    st.session_state.quiz_done_today = True
+                else:
+                    st.session_state.quiz_feedback = {"type": "warning", "text": "not quite", "tip": quiz["tip"]}
+                    if st.session_state.quiz_tries >= 2:
+                        st.session_state.quiz_done_today = True
+                st.rerun()
+
+        if st.session_state.quiz_feedback:
+            fb = st.session_state.quiz_feedback
+            if fb["type"] == "success":
+                st.success(f"{fb['text']} (+2 stars if first correct)")
+            else:
+                st.warning(fb["text"])
+                if fb.get("tip"):
+                    st.info(fb["tip"])
+                remaining = max(0, 2 - int(st.session_state.quiz_tries))
+                if not st.session_state.quiz_done_today:
+                    st.caption(f"tries left: {remaining}")
+
+        st.markdown("---")
+
+        st.write("Puzzle (1 question) 🧩")
+        puzzle = st.session_state.puzzle_current
+        st.write(puzzle["q"])
+        puzzle_choice = st.radio("choose one", puzzle["choices"], key="puzzle_choice_kids")
+
+        puzzle_done = st.session_state.puzzle_done_today
+        if puzzle_done:
+            st.caption("Puzzle is done for today. come back tomorrow for a new one.")
+        else:
+            if st.button("Check puzzle answer", key="check_puzzle_btn"):
+                st.session_state.puzzle_tries += 1
+                if puzzle_choice == puzzle["answer"]:
+                    if not st.session_state.puzzle_star_awarded:
+                        st.session_state.stars += 2
+                        st.session_state.puzzle_star_awarded = True
+                    st.session_state.puzzle_feedback = {"type": "success", "text": "nice", "tip": ""}
+                    st.session_state.puzzle_done_today = True
+                else:
+                    st.session_state.puzzle_feedback = {"type": "warning", "text": "almost", "tip": puzzle["tip"]}
+                    if st.session_state.puzzle_tries >= 2:
+                        st.session_state.puzzle_done_today = True
+                st.rerun()
+
+        if st.session_state.puzzle_feedback:
+            fb = st.session_state.puzzle_feedback
+            if fb["type"] == "success":
+                st.success(f"{fb['text']} (+2 stars if first correct)")
+            else:
+                st.warning(fb["text"])
+                if fb.get("tip"):
+                    st.info(fb["tip"])
+                remaining = max(0, 2 - int(st.session_state.puzzle_tries))
+                if not st.session_state.puzzle_done_today:
+                    st.caption(f"tries left: {remaining}")
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
     if st.session_state.view == "Progress":
         st.markdown('<div class="kid-card">', unsafe_allow_html=True)
