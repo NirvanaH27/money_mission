@@ -744,7 +744,7 @@ if st.session_state.mode == "Kids":
 
         st.markdown('<div class="kid-card">', unsafe_allow_html=True)
 
-        # wrap all mission choices + finish button in a form so it must be re-submitted each mission
+        # form: MUST include submit button inside
         with st.form(key=f"mission_form_{st.session_state.mission}", clear_on_submit=True):
             spend_amt = 0
             save_amt = 0
@@ -762,7 +762,6 @@ if st.session_state.mode == "Kids":
                     max_value=int(st.session_state.wallet),
                     value=0,
                 )
-
                 remaining_wallet = int(st.session_state.wallet) - int(save_amt)
 
                 st.subheader("Step 2: choose a buy (optional)")
@@ -780,7 +779,6 @@ if st.session_state.mode == "Kids":
                     max_value=int(st.session_state.wallet),
                     value=0,
                 )
-
                 remaining_wallet = int(st.session_state.wallet) - int(save_amt)
 
                 st.subheader("Step 2: need or want?")
@@ -818,7 +816,6 @@ if st.session_state.mode == "Kids":
                     max_value=int(st.session_state.wallet),
                     value=0,
                 )
-
                 remaining_wallet = int(st.session_state.wallet) - int(save_amt)
 
                 st.subheader("Step 2: Choose a buy (optional)")
@@ -837,98 +834,99 @@ if st.session_state.mode == "Kids":
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # mission logic
         if finish:
-            remaining_wallet = int(st.session_state.wallet) - int(save_amt)
-            if int(spend_amt) > int(remaining_wallet):
-                st.error("That buy does not fit after saving. choose a smaller buy or save less.")
-            else:
-                # apply save + spend
-                st.session_state.bank += int(save_amt)
-                st.session_state.wallet -= int(save_amt)
+            # enforce affordability (so no negative wallet)
+            save_amt = int(save_amt)
+            spend_amt = int(spend_amt)
 
-                st.session_state.wallet -= int(spend_amt)
+            save_amt = clamp(save_amt, 0, int(st.session_state.wallet))
+            remaining_wallet = int(st.session_state.wallet) - save_amt
+            if spend_amt > remaining_wallet:
+                spend_amt = 0
 
-                # growth test (level 6)
-                growth_result = None
-                if lvl >= 6 and do_growth_test:
-                    if int(st.session_state.wallet) >= 5:
-                        st.session_state.wallet -= 5
-                        growth_result = random.randint(4, 7)
-                        st.session_state.wallet += growth_result
-                        st.session_state.history.append(
-                            {"mission": int(st.session_state.mission), "event": "growth_test", "amount": growth_result - 5}
-                        )
-                    else:
-                        st.warning("Not enough coins in wallet for the growth test.")
+            # apply save + spend
+            st.session_state.wallet -= save_amt
+            st.session_state.bank += save_amt
 
-                # surprise event
-                surprise_text = ""
-                if random.random() < 0.25:
-                    text, amt = random.choice(SURPRISE_EVENTS)
-                    surprise_text = text
-                    if int(st.session_state.wallet) + amt >= 0:
-                        st.session_state.wallet += amt
-                    else:
-                        remainder = abs(int(st.session_state.wallet) + amt)
-                        st.session_state.wallet = 0
-                        st.session_state.bank = max(0, int(st.session_state.bank) - remainder)
-                    st.session_state.history.append(
-                        {"mission": int(st.session_state.mission), "event": "surprise_event", "amount": int(amt), "text": text}
-                    )
+            st.session_state.wallet -= spend_amt
 
-                allowance = int(st.session_state.allowance)
-                saved = int(save_amt)
-                spent = int(spend_amt)
-                ok = LEVELS[lvl]["mission_goal_fn"](saved, spent, allowance)
-
-                stars_earned = 0
-                if ok:
-                    stars_earned = 3
-                    st.session_state.stars += stars_earned
-                    st.session_state.streak += 1
+            # surprise event (optional, simple and safe)
+            surprise_text = ""
+            if lvl >= 3 and random.random() < 0.20:
+                text, delta = random.choice(SURPRISE_EVENTS)
+                surprise_text = text
+                if int(st.session_state.wallet) + delta >= 0:
+                    st.session_state.wallet += delta
                 else:
-                    st.session_state.streak = 0
-
-                st.session_state.save_hist.append(saved)
-                st.session_state.spend_hist.append(spent)
-
-                goal_text = "goal progress updated"
-                lines = mission_summary_lines(saved, spent, allowance, lvl)
-
-                st.session_state.last_mission_summary = {
-                    "saved": saved,
-                    "spent": spent,
-                    "stars_earned": stars_earned,
-                    "goal_text": goal_text,
-                    "lines": lines,
-                    "growth_result": growth_result,
-                    "surprise_text": surprise_text,
-                }
-
+                    remainder = abs(int(st.session_state.wallet) + delta)
+                    st.session_state.wallet = 0
+                    st.session_state.bank = max(0, int(st.session_state.bank) - remainder)
                 st.session_state.history.append(
-                    {
-                        "mission": int(st.session_state.mission),
-                        "event": "mission_end",
-                        "saved": saved,
-                        "spent": spent,
-                        "bank": int(st.session_state.bank),
-                        "wallet": int(st.session_state.wallet),
-                        "stars": int(st.session_state.stars),
-                        "streak": int(st.session_state.streak),
-                        "level": int(st.session_state.level),
-                        "allowance": int(st.session_state.allowance),
-                    }
+                    {"mission": int(st.session_state.mission), "event": "surprise_event", "amount": int(delta)}
                 )
 
-                st.session_state.mission += 1
-                st.session_state.mission_paid = False
-                st.session_state.mission_paid_amount = 0
-                st.session_state.subscriptions_charged_this_mission = False
+            # growth test (level 6)
+            growth_result = None
+            if lvl >= 6 and bool(do_growth_test):
+                if int(st.session_state.wallet) >= 5:
+                    st.session_state.wallet -= 5
+                    growth_result = random.randint(4, 7)
+                    st.session_state.wallet += int(growth_result)
+                    st.session_state.history.append(
+                        {"mission": int(st.session_state.mission), "event": "growth_test", "amount": int(growth_result) - 5}
+                    )
 
-                st.session_state.play_step = "Today’s learning"
-                st.balloons()
-                st.rerun()
+            # mission goal + stars + streak
+            allowance = int(st.session_state.allowance)
+            goal_met = bool(level_info["mission_goal_fn"](save_amt, spend_amt, allowance))
+
+            stars_earned = 0
+            if goal_met:
+                stars_earned = 3
+                st.session_state.stars += stars_earned
+                st.session_state.streak += 1
+            else:
+                st.session_state.streak = 0
+
+            # track history
+            st.session_state.save_hist.append(int(save_amt))
+            st.session_state.spend_hist.append(int(spend_amt))
+
+            goal_text = "goal met ✅ (+3 stars)" if goal_met else "goal not met (try again next mission)"
+
+            st.session_state.last_mission_summary = {
+                "saved": int(save_amt),
+                "spent": int(spend_amt),
+                "stars_earned": int(stars_earned),
+                "goal_text": goal_text,
+                "lines": mission_summary_lines(int(save_amt), int(spend_amt), int(st.session_state.allowance), int(st.session_state.level)),
+                "growth_result": growth_result,
+                "surprise_text": surprise_text,
+            }
+
+            st.session_state.history.append(
+                {
+                    "mission": int(st.session_state.mission),
+                    "event": "mission_end",
+                    "saved": int(save_amt),
+                    "spent": int(spend_amt),
+                    "bank": int(st.session_state.bank),
+                    "wallet": int(st.session_state.wallet),
+                    "stars": int(st.session_state.stars),
+                    "streak": int(st.session_state.streak),
+                    "level": int(st.session_state.level),
+                    "allowance": int(st.session_state.allowance),
+                }
+            )
+
+            st.session_state.mission += 1
+            st.session_state.mission_paid = False
+            st.session_state.mission_paid_amount = 0
+            st.session_state.subscriptions_charged_this_mission = False
+
+            st.session_state.play_step = "Today’s learning"
+            st.balloons()
+            st.rerun()
 
         if st.session_state.last_mission_summary:
             s = st.session_state.last_mission_summary
@@ -1101,7 +1099,12 @@ if st.session_state.mode == "Kids":
             st.markdown('<div class="kid-card">', unsafe_allow_html=True)
             st.subheader("Choose Your Theme 🎨")
             theme_choices = sorted(list(st.session_state.unlocked_themes))
-            new_theme = st.selectbox("theme", theme_choices, index=theme_choices.index(st.session_state.theme_name), key="theme_pick")
+            new_theme = st.selectbox(
+                "theme",
+                theme_choices,
+                index=theme_choices.index(st.session_state.theme_name),
+                key="theme_pick",
+            )
             if new_theme != st.session_state.theme_name:
                 st.session_state.theme_name = new_theme
                 st.success(f"theme applied: {new_theme}")
@@ -1274,7 +1277,8 @@ if st.session_state.mode == "Parents":
             st.session_state.parent_reflection_choice = st.selectbox(
                 "what did your child struggle with most recently?",
                 PARENT_REFLECTION,
-                index=PARENT_REFLECTION.index(st.session_state.parent_reflection_choice) if st.session_state.parent_reflection_choice in PARENT_REFLECTION else 0,
+                index=PARENT_REFLECTION.index(st.session_state.parent_reflection_choice)
+                if st.session_state.parent_reflection_choice in PARENT_REFLECTION else 0,
                 key="parent_reflection_pick",
             )
             reflection = st.session_state.parent_reflection_choice
