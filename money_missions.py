@@ -843,9 +843,9 @@ if st.session_state.mode == "Kids":
     save_amt = 0
     do_growth_test = False
 
-            spend_options = SPEND_OPTIONS_BY_LEVEL.get(lvl, SPEND_OPTIONS_BY_LEVEL[2])
+    spend_options = SPEND_OPTIONS_BY_LEVEL.get(lvl, SPEND_OPTIONS_BY_LEVEL[2])
 
-            st.caption("Tiny plan: try to save first, then choose a buy that fits your wallet.")
+    st.caption("Tiny plan: try to save first, then choose a buy that fits your wallet.")
 
             if lvl <= 2:
                 st.subheader("Step 1: save first")
